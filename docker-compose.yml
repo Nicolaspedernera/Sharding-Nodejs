@@ -1,0 +1,78 @@
+version: '3.5'
+
+services:
+  shard1:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /data/shard1
+      PORT: 5432
+    volumes:
+       - ./init.sql:/docker-entrypoint-initdb.d/init.sql 
+    ports:
+      - "5432:5432"
+    networks:
+
+      - postgres
+    restart: unless-stopped
+
+  shard2:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /data/shard2
+      PGPORT: 5433 
+    volumes:
+       - ./init.sql:/docker-entrypoint-initdb.d/init.sql 
+    ports:
+      - "5433:5433"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  shard3:
+    build:
+      context: . 
+      dockerfile: Dockerfile   
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGPORT: 5434     
+      PGDATA: /data/shard3
+    volumes:
+       - ./init.sql:/docker-entrypoint-initdb.d/init.sql 
+    ports:
+      - "5434:5434"
+    networks:
+      - postgres
+    restart: unless-stopped
+  
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+       - pgadmin:/var/lib/pgadmin
+
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  postgres:
+    external: true 
+   
+volumes:
+    postgres:
+    pgadmin:

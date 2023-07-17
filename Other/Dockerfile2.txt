@@ -1,0 +1,16 @@
+FROM node:12
+
+WORKDIR /home/node/app
+
+COPY server /home/node/app/
+
+RUN npm install 
+
+EXPOSE 8000
+
+CMD npm run app 
+
+# The run command execute when you build that image from the docker file. 
+# the cmd execute when you actually run an instance of the container from that image.
+
+
